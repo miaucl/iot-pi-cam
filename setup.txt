@@ -1,0 +1,12 @@
+Find IP:
+
+sudo nmap -sP 192.168.1.0/24 | awk '/^Nmap/{ip=$NF}/B8:27:EB/{print ip}'
+
+
+Connect:
+
+ssh pi@192.168.1.125
+
+Passwort:
+
+2778

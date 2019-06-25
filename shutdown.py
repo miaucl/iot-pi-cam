@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# shutdown/reboot Raspberry Pi mittels Taste
-
 """Control hardware shutdown behaviour."""
 
 import RPi.GPIO as GPIO
@@ -13,6 +11,9 @@ PORT = 5
 # Schwelle fuer Shutdown (in Sekunden), wird die Taste kuerzer
 # gedruckt, erfolgt ein Reboot
 T_SHUT = 3
+
+# Schwelle fuer timeout
+T_TIMEOUT = 10
 
 # Entprellzeit fuer die Taste
 T_PRELL = 0.05
@@ -44,6 +45,8 @@ def buttonISR(pin):
             if duration > 0:
                 elapsed = (time.time() - duration)
                 duration = 0
+                if elapsed > T_TIMEOUT:
+                    duration = 0
                 if elapsed >= T_SHUT:
                     syslog.syslog('Shutdown: System halted');
                     subprocess.call(['shutdown', '-h', 'now'], shell=False)
@@ -58,6 +61,8 @@ syslog.syslog('Shutdown.py started');
 while True:
     try:
         time.sleep(300)
+        if time.time() - duration > T_TIMEOUT:
+            duration = 0
     except KeyboardInterrupt:
         syslog.syslog('Shutdown terminated (Keyboard)');
         print ("Bye")
