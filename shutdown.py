@@ -8,9 +8,9 @@ import subprocess, time, sys, syslog, os
 # GPIO 5, Pin 29 (GND waere daneben auf Pin 30)
 PORT = 5
 
-# Schwelle fuer Shutdown (in Sekunden), wird die Taste kuerzer
+# Schwelle fuer Shutdown (in Sekunden), wird die Taste laenger
 # gedruckt, erfolgt ein Reboot
-T_SHUT = 3
+T_REBOOT = 3
 
 # Schwelle fuer timeout
 T_TIMEOUT = 10
@@ -47,12 +47,12 @@ def buttonISR(pin):
                 duration = 0
                 if elapsed > T_TIMEOUT:
                     duration = 0
-                if elapsed >= T_SHUT:
-                    syslog.syslog('Shutdown: System halted');
-                    subprocess.call(['shutdown', '-h', 'now'], shell=False)
-                elif elapsed >= T_PRELL:
+                if elapsed >= T_REBOOT:
                     syslog.syslog('Shutdown: System rebooted');
                     subprocess.call(['shutdown', '-r', 'now'], shell=False)
+                elif elapsed >= T_PRELL:
+                    syslog.syslog('Shutdown: System halted');
+                    subprocess.call(['shutdown', '-h', 'now'], shell=False)
 
 # Interrupt fuer die Taste einschalten
 GPIO.add_event_detect(PORT, GPIO.BOTH, callback=buttonISR)
