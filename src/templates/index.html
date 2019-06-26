@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="apple-mobile-web-app-title" content="PI Cam – Live">
+    <meta name="application-name" content="PI Cam – Live">
+    <meta name="theme-color" content="#ffffff">
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    {% if reload == "auto" %}
+      <meta http-equiv="refresh" content="3">
+    {% endif %}
+
+    <title>PI Cam – Live</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/button.css">
+  </head>
+  <body>
+    <img src="{{ livePic }}?timestamp={{ timestamp }}" alt="Live Picture">
+    <div class="buttons">
+      {% if reload == "auto" %}
+        <a class="button red" href="/?reload=manual">Stop</a>
+      {% else %}
+        <a class="button green" href="/?reload=auto">Reload</a>
+      {% endif %}
+      <a class="button blue" href="/motion">Motion</a>
+      <a class="button blue" href="{{livePic}}" download>Download</a>
+    </div>
+  </body>
+</html>

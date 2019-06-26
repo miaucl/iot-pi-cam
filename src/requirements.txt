@@ -1,0 +1,6 @@
+matplotlib
+numpy
+Pillow
+flask
+flask_httpauth
+json_tricks

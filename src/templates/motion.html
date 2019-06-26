@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="apple-mobile-web-app-title" content="PI Cam – Motion">
+    <meta name="application-name" content="PI Cam – Motion">
+    <meta name="theme-color" content="#ffffff">
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>PI Cam – Motion</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/button.css">
+  </head>
+  <body>
+    <div class="buttons">
+      <a class="button" href="/motion">Reload</a>
+      <a class="button blue" href="/">Live</a>
+    </div>
+    <ul>
+      {% for motionTimestamp in motionTimestamps %}
+        <li><a href="/motion-view?timestamp={{motionTimestamp}}">{{motionTimestamp}}</a></li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

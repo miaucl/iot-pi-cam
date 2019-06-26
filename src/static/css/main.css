@@ -1,0 +1,44 @@
+@charset "UTF-8";
+
+html
+{
+  height: 100%;
+}
+
+body
+{
+  font-family: "proxima-nova","Helvetica Neue",Arial,sans-serif;
+  height: 100%;
+  margin: 0px !important;
+}
+
+img
+{
+  display: block;
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.buttons
+{
+  position: fixed;
+  display: block;
+
+  top: 16px;
+  left: 16px;
+}
+
+ul
+{
+  margin-top: 64px;
+  margin-left: 16px;
+  list-style: none;
+}
+
+ul a:hover,
+ul a:active
+{
+  color: darkblue;
+  text-decoration: underline;
+}
