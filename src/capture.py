@@ -15,7 +15,7 @@ from PIL import Image
 ##############
 DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
-SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
+SENSITIVITY_FACTOR = 20 # Sensitivity of difference between image
 MOTION_COOLDOWN = 5 # The motion cooldown
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
