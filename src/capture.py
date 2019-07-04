@@ -7,7 +7,7 @@ from time import sleep
 from picamera import PiCamera
 from datetime import datetime
 from PIL import Image
-
+from scipy.ndimage import gaussian_filter
 
 
 ##############
@@ -15,7 +15,7 @@ from PIL import Image
 ##############
 DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
-SENSITIVITY_FACTOR = 20 # Sensitivity of difference between image
+SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
 MOTION_COOLDOWN = 5 # The motion cooldown
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
@@ -61,11 +61,13 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
 
     im = np.array(Image.open(filename), dtype=np.float32) # Read new image
 
+    im = gaussian_filter(im, sigma=4) # Smooth the image
+
     if imOld is not None: # If already an old image to compare
         diff = np.sum(np.square(im - imOld)) # Get difference between the images
 
         if diffOld is not None: # If already an old difference to compare
-            #print(diff/diffOld, diffOld/diff)
+            print(diff/diffOld, diffOld/diff, flush = True)
             if diff/diffOld > SENSITIVITY_FACTOR or diffOld/diff > SENSITIVITY_FACTOR: # Check if difference in image is large
                 if motionCooldown == 0: # Check if already a new motion can be registered
                     motionCooldown = MOTION_COOLDOWN # Set motion cooldown
@@ -96,6 +98,10 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
 
     sleep(max(MIN_DELAY, DELAY - elapsed)) # Wait for next picture
     t = time.time() # Start timer
+
+    now = datetime.now() # Current date and time
+    while (now.hour < 8 or now.hour >= 20): # Wait during night time
+        sleep(60)
 
 
     now = datetime.now() # Current date and time
