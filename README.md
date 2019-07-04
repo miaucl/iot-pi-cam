@@ -4,7 +4,7 @@
 
 Make script executable with `chmod +x /home/pi/iot-pi-cam/shutdown.py`.
 
-Create a service in `/lib/systemd/system/` (as root) with name "switchoff.service" and content:
+Create a service with `sudo nano /lib/systemd/system/switchoff.service` as root and with content:
 
 ```
 [Unit]
@@ -37,7 +37,7 @@ Use `journalctl -u switchoff.service -f` to follow logs
 
 Make script executable with `chmod +x /home/pi/iot-pi-cam/src/capture.py`.
 
-Create a service in `/lib/systemd/system/` (as root) with name "capture.service" and content:
+Create a service with `sudo nano /lib/systemd/system/capture.service` as root and with content:
 
 ```
 [Unit]
@@ -73,7 +73,7 @@ Install requirements with `sudo pip3 install -r /home/pi/iot-pi-cam/src/requirem
 
 Make script executable with `chmod +x /home/pi/iot-pi-cam/src/index.py`.
 
-Create a service in `/lib/systemd/system/` (as root) with name "web.service" and content:
+Create a service with `sudo nano /lib/systemd/system/web.service` as root and with content:
 
 ```
 [Unit]
