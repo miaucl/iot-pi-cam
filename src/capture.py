@@ -7,16 +7,22 @@ from time import sleep
 from picamera import PiCamera
 from datetime import datetime
 from PIL import Image
-from scipy.ndimage import gaussian_filter
-
+from scipy import ndimage
 
 ##############
 # Parameters #
 ##############
 DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
-SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
+SENSITIVITY_FACTOR = 2.4 # Sensitivity of difference between image
 MOTION_COOLDOWN = 5 # The motion cooldown
+GAUSSIAN_SIGMA = 1 # The sigma for the gaussian filtering
+FROM = 8 # Time span start
+TO = 20 # Time span end
+RESX = int(1024)
+RESY = int(768)
+POINT1 = np.asarray([0.2 * RESX, 0 * RESY], dtype=np.int) # Bottom left
+POINT2 = np.asarray([0.7 * RESX, 0.6 * RESY], dtype=np.int) # Top right
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
 MOTION_LOG_FILE = "./motion-log.txt" # The log file for the motion
@@ -33,7 +39,7 @@ LIVE_PICTURE = "./live-pic.txt" # The name of the currently live picture
 print("Configuration …", flush = True)
 camera = PiCamera()
 #camera.start_preview()
-camera.resolution = (1024, 768)
+camera.resolution = (RESX, RESY)
 
 
 
@@ -61,10 +67,14 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
 
     im = np.array(Image.open(filename), dtype=np.float32) # Read new image
 
-    im = gaussian_filter(im, sigma=4) # Smooth the image
+    im = im[POINT1[1]:POINT2[1],POINT1[0]:POINT2[0]] # Crop image
+
+    k = np.array([[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]]])
+    im = ndimage.filters.convolve(im, k) # Smooth the image
 
     if imOld is not None: # If already an old image to compare
-        diff = np.sum(np.square(im - imOld)) # Get difference between the images
+        #diff = np.sum(np.square(im - imOld)) # Get difference between the images
+        diff = np.sum(np.abs(im - imOld)) # Get difference between the images
 
         if diffOld is not None: # If already an old difference to compare
             print(diff/diffOld, diffOld/diff, flush = True)
@@ -100,8 +110,9 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
     t = time.time() # Start timer
 
     now = datetime.now() # Current date and time
-    while (now.hour < 8 or now.hour >= 20): # Wait during night time
+    while (now.hour < FROM or now.hour >= TO): # Wait during night time
         sleep(60)
+        now = datetime.now()
 
 
     now = datetime.now() # Current date and time

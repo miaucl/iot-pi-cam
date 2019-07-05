@@ -69,10 +69,24 @@ def motionView():
     timestamp = request.args.get('timestamp')
     motionPic = MOTION_FOLDER + timestamp + ".jpg"
     files = [f for f in listdir(MOTION_FOLDER_REL) if isfile(join(MOTION_FOLDER_REL, f))]
+    files.sort()
+    files.reverse()
+    files = files[1:]
     index = files.index(timestamp + ".jpg")
     next = os.path.splitext(files[index + 1])[0] if index + 1 < len(files) else None
     previous = os.path.splitext(files[index - 1])[0] if index > 0 else None
     return render_template('motion-view.html', motionPic=motionPic, next=next, previous=previous)
+
+@app.route('/gallery')
+@auth.login_required
+def gallery():
+    """Respond to a gallery request."""
+    files = [f for f in listdir(MOTION_FOLDER_REL) if isfile(join(MOTION_FOLDER_REL, f))]
+    files.sort()
+    files.reverse()
+    files = files[1:]
+    pictures = list(map(lambda x: MOTION_FOLDER + x, files))
+    return render_template('gallery.html', pictures=pictures)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)

@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="/static/css/button.css">
   </head>
   <body>
-    <img src="{{ livePic }}?timestamp={{ timestamp }}" alt="Live Picture">
+    <img class="live-picture" src="{{ livePic }}?timestamp={{ timestamp }}" alt="Live Picture">
     <div class="buttons">
       {% if reload == "auto" %}
         <a class="button red" href="/?reload=manual">Stop</a>
