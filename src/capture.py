@@ -14,9 +14,8 @@ from scipy import ndimage
 ##############
 DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
-SENSITIVITY_FACTOR = 2.4 # Sensitivity of difference between image
+SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
 MOTION_COOLDOWN = 5 # The motion cooldown
-GAUSSIAN_SIGMA = 1 # The sigma for the gaussian filtering
 FROM = 8 # Time span start
 TO = 20 # Time span end
 RESX = int(1024)
