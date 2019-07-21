@@ -28,13 +28,13 @@ DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
 SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
 GRAY_THRESHOLD = 60 # The threshold for the image color differences
-AREA_THRESHOLD = 2400 # The threshold for the areas
+AREA_THRESHOLD = 1200 # The threshold for the areas
 MOTION_COOLDOWN = 3 # The motion cooldown
 FROM = 8 # Time span start
 TO = 21 # Time span end
 RESX = int(1024)
 RESY = int(768)
-POINT1 = np.asarray([0 * RESX, 0.4 * RESY], dtype=np.int) # X_LEFT, Y_TOP
+POINT1 = np.asarray([0.3 * RESX, 0.4 * RESY], dtype=np.int) # X_LEFT, Y_TOP
 POINT2 = np.asarray([0.8 * RESX, 0.9 * RESY], dtype=np.int) # X_RIGHT, Y_BOTTOM
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
@@ -44,7 +44,7 @@ PICTURE_LOOP_LENGTH = 9 # The length of the picture loop before restarting at 0
 LIVE_PICTURE = "./live-pic.txt" # The name of the currently live picture
 DROPBOX_APP_KEY = '7ow24249qomcfx4' # Access key for dropbox
 DROPBOX_APP_SECRET = 'v6asxngnztrrdhr' # Access secret for dropbox
-DROPBOX_APP_TOKEN = 'INSERT TOKEN HERE' # The token for the dropbox access
+DROPBOX_APP_TOKEN = 'INSERT_TOKEN_HERE' # The token for the dropbox access
 
 
 
