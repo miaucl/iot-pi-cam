@@ -28,7 +28,7 @@ After restart:
 ```
 sudo systemctl status switchoff.service
 ```
-Use `disable` to turn it off.
+Use `disable` and `stop` to turn it off.
 
 Use `journalctl -u switchoff.service -f` to follow logs
 
@@ -62,7 +62,7 @@ After restart:
 ```
 sudo systemctl status capture.service
 ```
-Use `disable` to turn it off.
+Use `disable` and `stop` to turn it off.
 
 Use `journalctl -u capture.service -f` to follow logs
 
@@ -98,6 +98,6 @@ After restart:
 ```
 sudo systemctl status web.service
 ```
-Use `disable` to turn it off.
+Use `disable` and `stop` to turn it off.
 
 Use `journalctl -u web.service -f` to follow logs
