@@ -1,8 +1,12 @@
 #!/usr/bin/python3
 """Capture continuous pictures and save them."""
+import sys
 import numpy as np
 import shutil
 import time
+import dropbox
+from dropbox.files import WriteMode
+from dropbox.exceptions import ApiError, AuthError
 from time import sleep
 from picamera import PiCamera, Color
 from datetime import datetime
@@ -25,7 +29,7 @@ MIN_DELAY = 0.5 # seconds
 SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
 GRAY_THRESHOLD = 60 # The threshold for the image color differences
 AREA_THRESHOLD = 2400 # The threshold for the areas
-MOTION_COOLDOWN = 5 # The motion cooldown
+MOTION_COOLDOWN = 3 # The motion cooldown
 FROM = 8 # Time span start
 TO = 21 # Time span end
 RESX = int(1024)
@@ -38,7 +42,9 @@ DET_FOLDER = "./static/img-det/" # The detection pictures
 MOTION_LOG_FILE = "./motion-log.txt" # The log file for the motion
 PICTURE_LOOP_LENGTH = 9 # The length of the picture loop before restarting at 0
 LIVE_PICTURE = "./live-pic.txt" # The name of the currently live picture
-
+DROPBOX_APP_KEY = '7ow24249qomcfx4' # Access key for dropbox
+DROPBOX_APP_SECRET = 'v6asxngnztrrdhr' # Access secret for dropbox
+DROPBOX_APP_TOKEN = 'INSERT TOKEN HERE' # The token for the dropbox access
 
 
 
@@ -51,6 +57,24 @@ camera = PiCamera()
 #camera.start_preview()
 camera.resolution = (RESX, RESY)
 camera.annotate_background = Color('black')
+
+#########################
+# Configure the dropbox #
+#########################
+print("Dropbox link …", flush = True)
+if (len(DROPBOX_APP_TOKEN) == 0):
+    sys.exit("ERROR: Looks like you didn't add your access token. Open up backup-and-restore-example.py in a text editor and paste in your token.")
+dbx = dropbox.Dropbox(DROPBOX_APP_TOKEN) # Create a dropbox object
+
+try: # Check that the access token is valid
+    dbx.users_get_current_account()
+except AuthError:
+    sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
+try:
+    print("Files found: %d" % len(dbx.files_list_folder('').entries))
+except:
+    sys.exit("Error while checking file details")
+
 
 
 ##########################
@@ -108,6 +132,29 @@ def detectionV2(im1,im2):
     return motionDetected, im1Box.astype(np.uint8)
 
 
+##########################
+# Upload file to Dropbox #
+##########################
+def upload(filename):
+    """Upload file to dropbox."""
+    with open(filename, 'rb') as f:
+    # We use WriteMode=overwrite to make sure that the settings in the file
+    # are changed on upload
+        try:
+            dbx.files_upload(f.read(), "/" + camera.annotate_text + ".jpg", mode=WriteMode('overwrite'))
+        except ApiError as err:
+            # This checks for the specific error where a user doesn't have enough Dropbox space quota to upload this file
+            if (err.error.is_path() and err.error.get_path().error.is_insufficient_space()):
+                print("ERROR: Cannot back up due to insufficient space.")
+            elif err.user_message_text:
+                print(err.user_message_text)
+                sys.exit()
+            else:
+                print(err)
+                sys.exit()
+
+
+
 #######################
 # Start the capturing #
 #######################
@@ -139,8 +186,9 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
                 motionCooldown = MOTION_COOLDOWN # Set motion cooldown
                 datetime.now()
                 print("Motion detected: %s" % camera.annotate_text, flush = True)
-                with open(MOTION_LOG_FILE, "a") as logfile:
+                with open(MOTION_LOG_FILE, "a") as logfile: # Keep the timestamp
                     logfile.write(camera.annotate_text + "\n")
+                upload(filename) # Save the (first!) image to the dropbox
 
     imOld = im # Keep last image
     if motionCooldown > 0: # If a motion was detected
