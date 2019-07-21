@@ -35,6 +35,8 @@ Use `journalctl -u switchoff.service -f` to follow logs
 
 ## Install capturing
 
+Install skimage: https://scikit-image.org/docs/dev/install.html
+
 Make script executable with `chmod +x /home/pi/iot-pi-cam/src/capture.py`.
 
 Create a service with `sudo nano /lib/systemd/system/capture.service` as root and with content:

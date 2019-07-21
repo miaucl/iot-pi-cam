@@ -8,6 +8,14 @@ from picamera import PiCamera, Color
 from datetime import datetime
 from PIL import Image
 from scipy import ndimage
+from skimage.color import rgb2gray
+from skimage.filters import gaussian
+from skimage import io
+from skimage.morphology import closing, square
+from skimage.measure import label, regionprops
+from skimage.draw import polygon_perimeter
+
+
 
 ##############
 # Parameters #
@@ -15,15 +23,18 @@ from scipy import ndimage
 DELAY = 2 # seconds
 MIN_DELAY = 0.5 # seconds
 SENSITIVITY_FACTOR = 10 # Sensitivity of difference between image
+GRAY_THRESHOLD = 60 # The threshold for the image color differences
+AREA_THRESHOLD = 2400 # The threshold for the areas
 MOTION_COOLDOWN = 5 # The motion cooldown
 FROM = 8 # Time span start
-TO = 20 # Time span end
+TO = 21 # Time span end
 RESX = int(1024)
 RESY = int(768)
-POINT1 = np.asarray([0.2 * RESX, 0 * RESY], dtype=np.int) # Bottom left
-POINT2 = np.asarray([0.7 * RESX, 0.6 * RESY], dtype=np.int) # Top right
+POINT1 = np.asarray([0 * RESX, 0.4 * RESY], dtype=np.int) # X_LEFT, Y_TOP
+POINT2 = np.asarray([0.8 * RESX, 0.9 * RESY], dtype=np.int) # X_RIGHT, Y_BOTTOM
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
+DET_FOLDER = "./static/img-det/" # The detection pictures
 MOTION_LOG_FILE = "./motion-log.txt" # The log file for the motion
 PICTURE_LOOP_LENGTH = 9 # The length of the picture loop before restarting at 0
 LIVE_PICTURE = "./live-pic.txt" # The name of the currently live picture
@@ -47,8 +58,10 @@ camera.annotate_background = Color('black')
 ##########################
 def detectionV1(im1,im2):
     """Detect motion between two consecutive images."""
-    #diff = np.sum(np.square(im - imOld)) # Get difference between the images
-    diff = np.sum(np.abs(im1 - im2)) # Get difference between the images
+    k = np.array([[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]]])
+    im1Conv = ndimage.filters.convolve(im1, k) # Smooth the image
+    im2Conv = ndimage.filters.convolve(im2, k) # Smooth the image
+    diff = np.sum(np.abs(im1Conv - im2Conv)) # Get difference between the images
     motionDetected = False
 
     if detectionV1.diffOld is not None: # If already an old difference to compare
@@ -57,10 +70,42 @@ def detectionV1(im1,im2):
 
     detectionV1.diffOld = diff # Keep last difference
 
-    return motionDetected, diff
+    return motionDetected, np.abs(im1 - im2)
 detectionV1.diffOld = None
 
+##########################
+# Detection Algorithm V2 #
+##########################
+def detectionV2(im1,im2):
+    """Detect motion between two consecutive images."""
+    im1Gray = rgb2gray(im1) # Convert to gray, as motion is color independent
+    im2Gray = rgb2gray(im2)
 
+    im1Gaussian = gaussian(im1Gray, sigma=1) # Blur the image for noise reduction
+    im2Gaussian = gaussian(im2Gray, sigma=1)
+
+    imAbsDiff = np.abs(im1Gaussian - im2Gaussian) # Calculate the difference between the images
+
+    imThresh = (imAbsDiff > GRAY_THRESHOLD).astype(int) # Threshold the differences
+
+    imDilated = closing(imThresh, square(6)) # Close gaps and holes
+
+    labels, num  = label(imDilated, return_num=True) # Get the regions detected in the thresholds
+
+    im1Box = im1.copy()
+    motionDetected = False
+    #print(list(map(lambda x: x.area, regionprops(labels))))
+    for region in regionprops(labels): # Loop the regions
+        if region.area > AREA_THRESHOLD: # Filter out the region by size
+            box = region.bbox # Draw a bounding box around the region indicating motion
+            r = [box[0],box[2],box[2],box[0]]
+            c = [box[3],box[3],box[1],box[1]]
+            rr, cc = polygon_perimeter(r, c, imDilated.shape, clip=True)
+            im1Box[rr, cc] = 255
+            motionDetected = True
+
+
+    return motionDetected, im1Box.astype(np.uint8)
 
 
 #######################
@@ -85,11 +130,10 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
 
     im = im[POINT1[1]:POINT2[1],POINT1[0]:POINT2[0]] # Crop image
 
-    k = np.array([[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]],[[1,1,1],[1,1,1],[1,1,1]]])
-    im = ndimage.filters.convolve(im, k) # Smooth the image
-
     if imOld is not None: # If already an old image to compare
-        motionDetected, imDiff = detectionV1(im, imOld) # Call motion detection algorithm
+        motionDetected, imageDet = detectionV2(im, imOld) # Call motion detection algorithm
+        #io.imsave(DET_FOLDER + 'pic%d.jpg' % i, imageDet)
+
         if motionDetected:
             if motionCooldown == 0: # Check if already a new motion can be registered
                 motionCooldown = MOTION_COOLDOWN # Set motion cooldown
@@ -101,6 +145,7 @@ for filename in camera.capture_continuous(TMP_FOLDER + 'pic.jpg'):
     imOld = im # Keep last image
     if motionCooldown > 0: # If a motion was detected
         print("Save image: %d" % motionCooldown, flush = True)
+        io.imsave(DET_FOLDER + camera.annotate_text + ".jpg", imageDet)
         shutil.copy2(filename, MOTION_FOLDER + camera.annotate_text + ".jpg")
         motionCooldown -= 1 # Cool down from last motion
 

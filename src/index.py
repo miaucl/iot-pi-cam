@@ -26,6 +26,8 @@ TMP_FOLDER = "/static/img-tmp/" # The location to stop tmp pictures
 TMP_FOLDER_REL = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "/static/img-motion/" # The location to stop motion pictures
 MOTION_FOLDER_REL = "./static/img-motion/" # The location to stop motion pictures
+DETECTION_FOLDER = "/static/img-det/" # The location to stop det pictures
+DETECTION_FOLDER_REL = "./static/img-det/" # The location to stop det pictures
 MOTION_LOG_FILE = "./motion-log.txt" # The log file for the motion
 LIVE_PICTURE = "./live-pic.txt" # The name of the currently live picture
 
@@ -86,6 +88,17 @@ def gallery():
     files.reverse()
     files = files[1:]
     pictures = list(map(lambda x: MOTION_FOLDER + x, files))
+    return render_template('gallery.html', pictures=pictures)
+
+@app.route('/gallery-detection')
+@auth.login_required
+def galleryDetection():
+    """Respond to a gallery detection request."""
+    files = [f for f in listdir(DETECTION_FOLDER_REL) if isfile(join(DETECTION_FOLDER_REL, f))]
+    files.sort()
+    files.reverse()
+    files = files[1:]
+    pictures = list(map(lambda x: DETECTION_FOLDER + x, files))
     return render_template('gallery.html', pictures=pictures)
 
 if __name__ == '__main__':
