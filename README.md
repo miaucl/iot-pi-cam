@@ -103,3 +103,7 @@ sudo systemctl status web.service
 Use `disable` and `stop` to turn it off.
 
 Use `journalctl -u web.service -f` to follow logs
+
+## To clear the logs and images
+
+Make clear script executable `sudo chmod x ./clear.sh` and execute it with `./clear.sh`.
