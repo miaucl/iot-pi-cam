@@ -35,7 +35,7 @@ TO = 21 # Time span end
 RESX = int(1024)
 RESY = int(768)
 POINT1 = np.asarray([0.3 * RESX, 0.4 * RESY], dtype=np.int) # X_LEFT, Y_TOP
-POINT2 = np.asarray([0.8 * RESX, 0.9 * RESY], dtype=np.int) # X_RIGHT, Y_BOTTOM
+POINT2 = np.asarray([0.55 * RESX, 0.8 * RESY], dtype=np.int) # X_RIGHT, Y_BOTTOM
 TMP_FOLDER = "./static/img-tmp/" # The location to stop tmp pictures
 MOTION_FOLDER = "./static/img-motion/" # The location to stop motion pictures
 DET_FOLDER = "./static/img-det/" # The detection pictures
@@ -152,6 +152,8 @@ def upload(filename):
             else:
                 print(err)
                 sys.exit()
+        except:
+            print("ERROR: Could not upload file, skip it and try on next!");
 
 
 
